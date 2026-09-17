@@ -1,0 +1,390 @@
+{
+  "name": "Checkpoint 1 - Leonelli Sebastian",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -592,
+        64
+      ],
+      "id": "43de6644-1b12-44a7-821c-7fb5a4950b07",
+      "name": "When chat message received",
+      "webhookId": "53ae1be6-ae5c-4c37-abef-6514c0d59f6e"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "ROL:\nSos el Asistente de Calificacion de Leads del equipo comercial de la empresa. Atendes en primera instancia a cualquier persona que escribe por el canal de chat.\n\nAMBITO:\nRespondes consultas sobre productos, precios generales (sin cifras exactas), disponibilidad y proceso comercial. No respondes temas de soporte tecnico, facturacion existente ni reclamos: esos casos se escalan.\n\nOBJETIVO:\n0. Apenas el usuario te de su email o su nombre completo, usa la herramienta de busqueda para verificar si ya es un lead existente en la planilla.\n   - Si YA EXISTE: no le vuelvas a pedir los datos que ya figuran registrados (nombre, necesidad previa, estado, etc). Solo preguntale por lo que falte o haya cambiado desde la ultima vez.\n   - Si NO EXISTE: es un lead nuevo. Pedile unicamente los datos minimos que todavia no haya mencionado espontaneamente en el chat (no repreguntes algo que ya te dijo).\n1. Conversar con el usuario para identificar: necesidad concreta, presupuesto aproximado, urgencia/plazo y si la persona tiene poder de decision (criterio BANT simplificado).\n2. Cuando reunas esos datos, considera al lead como calificado o no calificado y usa la herramienta de registro (appendOrUpdate) para guardarlo o actualizarlo, junto con nombre, email y una descripcion breve de la necesidad. No incluyas ni inventes un numero de ID: la planilla lo genera sola.\n3. Cerrar la conversacion confirmando al usuario que un asesor humano se va a poner en contacto.\n\nREGLAS Y ESCALAMIENTO:\n- Nunca prometas descuentos, precios exactos ni plazos de entrega especificos: eso lo confirma un humano.\n- Nunca compartas informacion interna de la empresa (contratos, datos de otros clientes, credenciales, procesos internos).\n- Si el usuario pide hablar con una persona, si detectas un reclamo, o si la conversacion se sale de tu ambito, usa la herramienta de escalamiento por mail y avisale al usuario que un humano va a tomar el caso. No intentes resolverlo por tu cuenta.\n- Si despues de 3 intercambios no lograste identificar los datos minimos del lead, registralo como \"no calificado - datos incompletos\" con la herramienta de registro y cierra la conversacion de forma cordial.\n- Se breve, profesional y directo en tus respuestas. No uses mas de un tono; mantente siempre formal y neutro.\n\nTOOLS DISPONIBLES:\n- Buscar Lead en Google Sheets: para verificar si el lead ya existe (usarla primero, apenas tengas email o nombre).\n- Append or update row in sheet in Google Sheets: para crear o actualizar el registro del lead.\n- Send a message in Gmail: para escalar un caso a un humano (reclamos, pedido explicito de hablar con una persona, fuera de ambito).",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -320,
+        64
+      ],
+      "id": "83eb12a0-739f-46fc-8ea3-eda0d8b7f034",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-5-20250929",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        352
+      ],
+      "id": "0d6a6d21-d5ac-4099-987e-47717b303b11",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "clWxVMONpw7fpNaf",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -352,
+        352
+      ],
+      "id": "401f4c7f-14c0-4bac-9ea0-209bce0cc4f0",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta al INICIO de la conversacion, apenas el usuario te de su email o su nombre completo, para verificar si ya existe como lead registrado en la planilla. Te devuelve sus datos actuales (Nombre, Email, Necesidad, Estado) si existe, o un resultado vacio si es un lead nuevo. Usala SIEMPRE antes de decidir si pedis todos los datos desde cero o solo los que faltan. No la uses para registrar ni actualizar datos, solo para consultar.",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2JmIHseF8C95EKyf_w--TdBW_3NjGcF6iZyo9vJxZg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 971975438,
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2JmIHseF8C95EKyf_w--TdBW_3NjGcF6iZyo9vJxZg/edit#gid=971975438"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        48,
+        352
+      ],
+      "id": "4ae97041-b948-48b2-bf93-05a9b79275ea",
+      "name": "Buscar Lead en Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5OpLOeSxQ3wSPU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta UNICAMENTE cuando ya hayas reunido los datos minimos del lead (nombre, email, necesidad y una estimacion de si esta calificado o no segun presupuesto, urgencia y poder de decision). Sirve para crear el registro si es un lead nuevo, o actualizarlo si ya existia (se identifica por Email). Sirve para dejar registrado el contacto en la planilla comercial de Leads que revisa el equipo de ventas todas las mananas. No la uses para consultar informacion (para eso esta 'Buscar Lead en Google Sheets'), ni para responder preguntas del usuario, ni la actives mas de una vez por conversacion salvo que el usuario corrija un dato que ya habias registrado. No incluyas ni inventes un numero de ID: la columna ID se completa sola en la planilla. Ejemplos de cuando SI usarla: el usuario ya dijo que quiere comprar en las proximas semanas y dejo su email; el usuario pidio ser contactado por un asesor. Ejemplos de cuando NO usarla: el usuario solo esta preguntando precios en general, todavia no dejo su email, o la conversacion recien empieza.",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2JmIHseF8C95EKyf_w--TdBW_3NjGcF6iZyo9vJxZg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre": "={{ $fromAI('nombre', 'Nombre completo del lead') }}",
+            "Email": "={{ $fromAI('email', 'Email de contacto del lead') }}",
+            "Necesidad": "={{ $fromAI('necesidad', 'Descripcion breve de la necesidad o consulta del lead') }}",
+            "Estado": "={{ $fromAI('estado', 'Calificado, No calificado, No calificado - datos incompletos, o Escalado') }}",
+            "Fecha": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Necesidad",
+              "displayName": "Necesidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -96,
+        352
+      ],
+      "id": "17f8f3d0-1e8b-418c-8029-c3b5e24192ba",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5OpLOeSxQ3wSPU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta cuando necesites escalar la conversacion a un humano: reclamos, pedido explicito de hablar con una persona, temas de facturacion existente, o cualquier caso fuera de tu ambito. Envia un mail al administrador con el resumen del caso y los datos de contacto que tengas del usuario, para que un asesor pueda retomarlo.",
+        "sendTo": "seba.aleonelli@gmail.com",
+        "subject": "Escalamiento de Lead - Requiere atencion",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        352
+      ],
+      "id": "3139e432-b3b2-4c5d-a309-562c294d2651",
+      "name": "Send a message in Gmail",
+      "webhookId": "a76d187c-4ecb-4dfc-af2f-47965deb015d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "65FLS8vIvgqoOdJa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "slpruebasconia@gmail.com",
+        "subject": "Log de ejecucion - AI Agent Checkpoint 1",
+        "message": "=Usuario: {{ $('When chat message received').item.json.chatInput }}\nRespuesta del agente: {{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        64
+      ],
+      "id": "30631a7c-0c9a-4ff5-9174-099e33147e5e",
+      "name": "Send a message",
+      "webhookId": "f6a64318-7b94-44f1-a4c1-1a322b007372",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "65FLS8vIvgqoOdJa",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When chat message received": [
+      {
+        "json": {
+          "action": "sendMessage",
+          "sessionId": "344df9e8bf194f10a96c84e8e2d27e55",
+          "chatInput": "de leads, en 5 meses"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "AI Agent": [
+      {
+        "json": {
+          "output": "Perfecto, Mamfredo. Ya te registré en nuestra base de datos:\n\n- **Nombre:** Mamfredo Gutierrez\n- **Email:** mafredocorredordebolsall@gmail.com\n- **Necesidad:** Sistema de gestión de leads (cotización previa de USD 300)\n- **Estado:** Calificado\n\nUn asesor comercial se va a comunicar con vos en breve a tu correo para retomar la cotización que te pasó Ramiro y coordinar la implementación.\n\n¿Algo más en lo que pueda ayudarte?"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Send a message": [
+      {
+        "json": {
+          "id": "1a0b0220324dea1d",
+          "threadId": "1a0b0220324dea1d",
+          "labelIds": [
+            "UNREAD",
+            "SENT",
+            "INBOX"
+          ]
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Lead en Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "791374d2-5dc1-4aba-901e-9c7d04b00bd3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "27cbfa4c4d0086077ee83d1b6a6e1c04cdbce97ed4ede93edcde75261c98a35c"
+  },
+  "nodeGroups": [],
+  "id": "MAplCrBqRJdMuo2J",
+  "tags": []
+}
